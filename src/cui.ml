@@ -1,0 +1,39 @@
+open Syntax
+open Eval
+open Typing
+
+let rec read_eval_print env tyenv =
+  print_string "# ";
+  flush stdout;
+  let decl = try Parser.toplevel Lexer.main (Lexing.from_channel stdin) with
+  (* 例外が起こった場合はException (エラー名)を返します。ただparserのエラーだけFailureで拾えなかったのでその他のエラーは全てparserによる文法エラーと
+  　　見做しています。 *)
+      Failure s -> Exception s
+    | _ -> Exception "syntax error"
+  in
+  let ty = ty_decl tyenv decl in
+  let (id, newenv, v) = try eval_decl env decl with
+  (* eval_decl関数は変数名、環境、束縛された値の三つ組を返すので、エラーが起こった場合には変数名を無しにして値をエラー文として出力させます。
+     環境はもちろんそのままです。 *)
+     Error s -> ("", env, ExceptV s) 
+  in
+  Printf.printf "val %s : " id;
+  pp_ty ty;
+  print_string " = ";
+  pp_val v;
+  print_newline();
+  read_eval_print newenv tyenv
+
+let initial_env =
+  Environment.extend "i" (IntV 1)
+    (Environment.extend "v" (IntV 5)
+      (Environment.extend "x" (IntV 10) 
+       (* iiを2、iiiを3、ivを4に束縛する大域環境です。 *)
+        (Environment.extend "ii" (IntV 2)
+          (Environment.extend "iii" (IntV 3)
+            (Environment.extend "iv" (IntV 4) (Environment.empty))))))
+
+let initial_tyenv =
+  Environment.extend "i" TyInt
+    (Environment.extend "v" TyInt
+      (Environment.extend "x" TyInt Environment.empty))

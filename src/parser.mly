@@ -18,6 +18,7 @@ open Syntax
 
 toplevel :
     e=Expr SEMISEMI { Exp e }
+  // | LCOMMENT c=Comment RCOMMENT {}
   | LET x=ID EQ e=Expr SEMISEMI { Decl (x, e) }
   // カリー化されたlet宣言の推論規則です。
   | LET x=ID e=LetParaExpr SEMISEMI { Decl (x, e) }

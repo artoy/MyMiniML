@@ -41,7 +41,7 @@ let rec apply_prim op arg1 arg2 = match op, arg1, arg2 with
 let rec eval_exp env = function
     Var x ->
     (try Environment.lookup x env with
-       Environment.Not_bound -> err ("Variable not bound: " ^ x))
+      Environment.Not_bound -> err ("Variable not bound: " ^ x))
   | ILit i -> IntV i
   | BLit b -> BoolV b
   | BinOp (op, exp1, exp2) -> 
@@ -62,13 +62,13 @@ let rec eval_exp env = function
                         apply_prim op arg1 arg2))
       | _ ->
           (let arg1 = eval_exp env exp1 in
-           let arg2 = eval_exp env exp2 in
-           apply_prim op arg1 arg2))
+            let arg2 = eval_exp env exp2 in
+            apply_prim op arg1 arg2))
   | IfExp (exp1, exp2, exp3) ->
       let test = eval_exp env exp1 in
       (match test with
-         BoolV true -> eval_exp env exp2
-      |  BoolV false -> eval_exp env exp3
+        BoolV true -> eval_exp env exp2
+      | BoolV false -> eval_exp env exp3
       | _ -> err ("Test expression must be boolean: if"))
   | LetExp (id, exp1, exp2) ->
       let value = eval_exp env exp1 in

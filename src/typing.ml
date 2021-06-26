@@ -27,7 +27,7 @@ let rec subst_eqs s eqs = match s with
     (tv, t) -> (match eqs with 
         (* 等式集合を一つ取り出してそれに取り出した型代入を適用させます。これを再帰的に繰り返します。 *)
         (x, y) :: rest -> 
-             (if x = tv && y = tv then (t, t) :: (subst_eqs s rest)
+            (if x = tv && y = tv then (t, t) :: (subst_eqs s rest)
               else if x = tv then (t, y) :: (subst_eqs s rest)
               else if y = tv then (x, t) :: (subst_eqs s rest)
               else (x, y) :: (subst_eqs s rest))

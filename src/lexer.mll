@@ -27,6 +27,8 @@ rule main = parse
 | "+" { Parser.PLUS }
 | "*" { Parser.MULT }
 | "<" { Parser.LT }
+(* | "(*" { Parser.LCOMMENT } *)
+(* | "*)" { Parser.RCOMMENT } *)
 | "&&" { Parser.ANDAND }
 | "||" { Parser.BARBAR }
 | "=" { Parser.EQ }
@@ -38,7 +40,7 @@ rule main = parse
         List.assoc id reservedWords
       with
       _ -> Parser.ID id
-     }
+    }
 | eof { exit 0 }
 
 

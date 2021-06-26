@@ -15,7 +15,7 @@ let rec read_eval_print env tyenv =
   let (id, newenv, v) = try eval_decl env decl with
   (* eval_decl関数は変数名、環境、束縛された値の三つ組を返すので、エラーが起こった場合には変数名を無しにして値をエラー文として出力させます。
      環境はもちろんそのままです。 *)
-     Error s -> ("", env, ExceptV s) 
+    Error s -> ("", env, ExceptV s) 
   in
   Printf.printf "val %s : " id;
   pp_ty ty;

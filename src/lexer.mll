@@ -27,10 +27,9 @@ rule main = parse
 | "+" { Parser.PLUS }
 | "*" { Parser.MULT }
 | "<" { Parser.LT }
-(* | "(*" { Parser.LCOMMENT } *)
-(* | "*)" { Parser.RCOMMENT } *)
 | "&&" { Parser.ANDAND }
 | "||" { Parser.BARBAR }
+| "(*" { comment 1 lexbuf }
 | "=" { Parser.EQ }
 | "->" { Parser.RARROW }
 
@@ -42,5 +41,9 @@ rule main = parse
       _ -> Parser.ID id
     }
 | eof { exit 0 }
+and comment n = parse
+| "(*" { comment (n+1) lexbuf }
+| "*)" { if (n=1) then (main lexbuf) else (comment (n-1) lexbuf) }
+| _ { comment n lexbuf }
 
 

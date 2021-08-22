@@ -8,6 +8,7 @@ open Syntax
 %token LET IN EQ
 %token RARROW FUN DFUN
 %token REC
+%token MATCH WITH NIL APPEND BAR
 
 %token <int> INTV
 %token <Syntax.id> ID
@@ -32,6 +33,7 @@ Expr :
   | e=LetExpr { e }
   | e=FunCurriedExpr { e }
   | e=DFunExpr { e }
+  | e=MatchExpr { e }
 
 OrExpr :
   // ||の推論規則です。最も結合が弱く、また左結合であるためこのようになっています。
@@ -53,6 +55,10 @@ PExpr :
 
 MExpr :
     l=MExpr MULT r=AppExpr { BinOp (Mult, l, r) }
+  | e=ConsExpr { e }
+
+ConsExpr :
+    i=AppExpr APPEND e=ConsExpr { ConsExp (i, e) }
   | e=AppExpr { e }
 
 AppExpr :
@@ -65,6 +71,7 @@ AExpr :
   | FALSE  { BLit false }
   | i=ID   { Var i }
   | LPAREN e=Expr RPAREN { e }
+  | NIL { NilExp }
 
 IfExpr :
     IF c=Expr THEN t=Expr ELSE e=Expr { IfExp (c, t, e) }
@@ -92,3 +99,6 @@ FunParaExpr :
 
 DFunExpr :
     DFUN x=ID RARROW e=Expr { DFunExp (x, e) }
+
+MatchExpr :
+    MATCH e1=Expr WITH NIL RARROW e2=Expr BAR x1=ID APPEND x2=ID RARROW e3=Expr { MatchExp (e1, e2, x1, x2, e3) }

@@ -123,7 +123,7 @@ let rec ty_exp tyenv = function
       (* 全体の制約を解きます。 T-Appよりτ2を返すのでdomtyを返します。*)
       let s3 = unify eqs in
         (s3, subst_type s3 domty)
-  | _ -> err ("Not Implmented!")
+  | _ -> err ("Not Implemented!")
 
 let ty_decl tyenv decl = 
   (* 評価の返り値は型代入と型の組なので型だけを取り出します。 *)

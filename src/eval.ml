@@ -38,7 +38,7 @@ let rec apply_prim op arg1 arg2 =
   | Lt, IntV i1, IntV i2 -> BoolV (i1 < i2)
   | Lt, _, _ -> err "Both arguments must be integer: <"
   (* &&と||はそのままOCamlの&&、||に対応させています。ただし、引数にbool以外の型をとる場合にはエラーを出力します。
-    また、短絡評価によって第一引数のみで返り値が決定する場合についてはeval_expの時点で決定されるようになっています。 *)
+     また、短絡評価によって第一引数のみで返り値が決定する場合についてはeval_expの時点で決定されるようになっています。 *)
   | Andand, BoolV i1, BoolV i2 -> BoolV (i1 && i2)
   | Andand, _, _ -> err "Both arguments must be boolean: &&"
   | Barbar, BoolV i1, BoolV i2 -> BoolV (i1 || i2)
@@ -52,7 +52,7 @@ let rec eval_exp env = function
   | BLit b -> BoolV b
   | BinOp (op, exp1, exp2) -> (
       (* &&の第一引数にfalse、||の第一引数にtrueが来た場合は第二引数を評価する前にそれぞれfalse、trueを返す短絡評価を実装しています。
-        その他の場合はapply_primで評価するようにしています。 *)
+         その他の場合はapply_primで評価するようにしています。 *)
       match op with
       | Andand ->
           let check = eval_exp env exp1 in
@@ -109,19 +109,21 @@ let rec eval_exp env = function
       let rest = eval_exp env exp2 in
       ConsV (head, rest)
   | MatchExp (exp1, exp2, id1, id2, exp3) -> (
-      let matcharg = eval_exp env exp1 in
-      let value1 = eval_exp env exp2 in
-      match matcharg with
-      | NilV -> value1
-      | ConsV (head, rest) ->
-          let newenv =
-            Environment.extend id2 rest (Environment.extend id1 head env)
-          in
-          eval_exp newenv exp3
-      | _ -> err "Value after match must be Nil or Cons")
+      if id1 = id2 then err "Head of list must be different from rest"
+      else
+        let matcharg = eval_exp env exp1 in
+        let value1 = eval_exp env exp2 in
+        match matcharg with
+        | NilV -> value1
+        | ConsV (head, rest) ->
+            let newenv =
+              Environment.extend id2 rest (Environment.extend id1 head env)
+            in
+            eval_exp newenv exp3
+        | _ -> err "Value after match must be Nil or Cons")
   | ListExp (exp1, exp2) ->
       let value1 = eval_exp env exp1 in
-      let value2 = eval_exp env exp2 in 
+      let value2 = eval_exp env exp2 in
       ConsV (value1, value2)
   | ListEndExp exp ->
       let value = eval_exp env exp in
@@ -136,7 +138,7 @@ let eval_decl env = function
       (id, Environment.extend id v env, v)
   | RecDecl (id, para, e) ->
       (* eval_expのLetRecExpと同様にダミーの環境を与えてそこに再帰の部分を束縛した環境を破壊的に代入することで環境の循環構造を構築しています。
-        また、変数idは先に再帰部分を束縛してから、値に束縛しています *)
+         また、変数idは先に再帰部分を束縛してから、値に束縛しています *)
       let dummyenv = ref Environment.empty in
       let newenv = Environment.extend id (ProcV (para, e, dummyenv)) env in
       dummyenv := newenv;

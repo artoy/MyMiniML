@@ -22,6 +22,8 @@ type exp =
   | NilExp
   | ConsExp of exp * exp
   | MatchExp of exp * exp * id * id * exp
+  | ListExp of exp * exp
+  | ListEndExp of exp
 
 type program =
   | Exp of exp

@@ -9,6 +9,7 @@ open Syntax
 %token RARROW FUN DFUN
 %token REC
 %token MATCH WITH NIL APPEND BAR
+%token LBOX RBOX SEMI
 
 %token <int> INTV
 %token <Syntax.id> ID
@@ -58,8 +59,16 @@ MExpr :
   | e=ConsExpr { e }
 
 ConsExpr :
-    i=AppExpr APPEND e=ConsExpr { ConsExp (i, e) }
+    i=ListStartExpr APPEND e=ConsExpr { ConsExp (i, e) }
+  | e=ListStartExpr { e }
+
+ListStartExpr :
+    LBOX e=ListExpr { e }
   | e=AppExpr { e }
+
+ListExpr :
+    e1=ListStartExpr SEMI e2=ListExpr { ListExp (e1, e2) }
+  | e=ListStartExpr RBOX { ListEndExp (e) }
 
 AppExpr :
     e1=AppExpr e2=AExpr { AppExp (e1, e2) }

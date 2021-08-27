@@ -121,13 +121,6 @@ let rec eval_exp env = function
             in
             eval_exp newenv exp3
         | _ -> err "Value after match must be Nil or Cons")
-  | ListExp (exp1, exp2) ->
-      let value1 = eval_exp env exp1 in
-      let value2 = eval_exp env exp2 in
-      ConsV (value1, value2)
-  | ListEndExp exp ->
-      let value = eval_exp env exp in
-      ConsV (value, NilV)
 
 let eval_decl env = function
   | Exp e ->

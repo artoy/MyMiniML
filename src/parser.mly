@@ -100,8 +100,8 @@ ListStartExpr :
   | e=AppExpr { e }
 
 ListExpr :
-    e1=ListStartExpr SEMI e2=ListExpr { ListExp (e1, e2) }
-  | e=ListStartExpr RBOX { ListEndExp (e) }
+    e1=ListStartExpr SEMI e2=ListExpr { ConsExp (e1, e2) }
+  | e=ListStartExpr RBOX { ConsExp (e, NilExp) }
 
 AppExpr :
     e1=AppExpr e2=AExpr { AppExp (e1, e2) }

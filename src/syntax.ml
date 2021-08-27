@@ -22,8 +22,6 @@ type exp =
   | NilExp
   | ConsExp of exp * exp
   | MatchExp of exp * exp * id * id * exp
-  | ListExp of exp * exp
-  | ListEndExp of exp
 
 type program =
   | Exp of exp
@@ -34,7 +32,7 @@ type program =
 
 type tyvar = int
 
-type ty = TyInt | TyBool | TyVar of tyvar | TyFun of ty * ty | TyList of ty
+type ty = TyInt | TyBool | TyVar of tyvar | TyFun of ty * ty | TyList of ty 
 
 let rec freevar_ty ty =
   match ty with
@@ -45,7 +43,7 @@ let rec freevar_ty ty =
   | TyVar t -> MySet.singleton t
   (* TyFunの引数中に出現する全ての型変数の集合の和集合を返します。 *)
   | TyFun (l, r) -> MySet.union (freevar_ty l) (freevar_ty r)
-  | _ -> err "Not supported!"
+  | TyList t -> freevar_ty t
 
 let rec string_of_ty ty =
   match ty with
@@ -91,7 +89,7 @@ let rec string_of_ty ty =
       match l with
       | TyFun (_, _) -> "(" ^ string_of_ty l ^ ")" ^ " -> " ^ string_of_ty r
       | _ -> string_of_ty l ^ " -> " ^ string_of_ty r)
-  | _ -> err "Not supported!"
+  | TyList t -> string_of_ty t ^ " list"
 
 let pp_ty ty =
   (* 引数をstring_of_tyに通してstring型にしてから出力します。 *)

@@ -27,14 +27,7 @@ toplevel :
   | LET REC x1=ID EQ FUN x2=ID RARROW e=Expr SEMISEMI { RecDecl (x1, x2, e) }
 
 Expr :
-    e=IfExpr { e }
-  | e=OrExpr { e }
-  // カリー化されたlet式、fun式はこの推論規則で導出されます。ただし、カリー化されたlet式は解釈時にfun式の解釈を利用しますので通常のlet式とは区別しています。
-  | e=LetCurriedExpr { e }
-  | e=LetExpr { e }
-  | e=FunCurriedExpr { e }
-  | e=DFunExpr { e }
-  | e=MatchExpr { e }
+    e=OrExpr { e }
 
 OrExpr :
   // ||の推論規則です。最も結合が弱く、また左結合であるためこのようになっています。
@@ -55,32 +48,18 @@ PExpr :
   | e=MExpr { e }
 
 MExpr :
-    l=MExpr MULT r=AppExpr { BinOp (Mult, l, r) }
+    l=MExpr MULT r=SyntacticExpr { BinOp (Mult, l, r) }
+  | e=SyntacticExpr { e }
+
+SyntacticExpr :
+    e=IfExpr { e }
+  // カリー化されたlet式、fun式はこの推論規則で導出されます。ただし、カリー化されたlet式は解釈時にfun式の解釈を利用しますので通常のlet式とは区別しています。
+  | e=LetCurriedExpr { e }
+  | e=LetExpr { e }
+  | e=FunCurriedExpr { e }
+  | e=DFunExpr { e }
+  | e=MatchExpr { e }
   | e=ConsExpr { e }
-
-ConsExpr :
-    i=ListStartExpr APPEND e=ConsExpr { ConsExp (i, e) }
-  | e=ListStartExpr { e }
-
-ListStartExpr :
-    LBOX e=ListExpr { e }
-  | e=AppExpr { e }
-
-ListExpr :
-    e1=ListStartExpr SEMI e2=ListExpr { ListExp (e1, e2) }
-  | e=ListStartExpr RBOX { ListEndExp (e) }
-
-AppExpr :
-    e1=AppExpr e2=AExpr { AppExp (e1, e2) }
-  | e=AExpr { e } 
-
-AExpr :
-    i=INTV { ILit i }
-  | TRUE   { BLit true }
-  | FALSE  { BLit false }
-  | i=ID   { Var i }
-  | LPAREN e=Expr RPAREN { e }
-  | NIL { NilExp }
 
 IfExpr :
     IF c=Expr THEN t=Expr ELSE e=Expr { IfExp (c, t, e) }
@@ -111,3 +90,27 @@ DFunExpr :
 
 MatchExpr :
     MATCH e1=Expr WITH NIL RARROW e2=Expr BAR x1=ID APPEND x2=ID RARROW e3=Expr { MatchExp (e1, e2, x1, x2, e3) }
+
+ConsExpr :
+    i=ListStartExpr APPEND e=ConsExpr { ConsExp (i, e) }
+  | e=ListStartExpr { e }
+
+ListStartExpr :
+    LBOX e=ListExpr { e }
+  | e=AppExpr { e }
+
+ListExpr :
+    e1=ListStartExpr SEMI e2=ListExpr { ListExp (e1, e2) }
+  | e=ListStartExpr RBOX { ListEndExp (e) }
+
+AppExpr :
+    e1=AppExpr e2=AExpr { AppExp (e1, e2) }
+  | e=AExpr { e } 
+
+AExpr :
+    i=INTV { ILit i }
+  | TRUE   { BLit true }
+  | FALSE  { BLit false }
+  | i=ID   { Var i }
+  | LPAREN e=Expr RPAREN { e }
+  | NIL { NilExp }

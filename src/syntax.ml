@@ -91,6 +91,7 @@ let rec string_of_ty ty =
       match l with
       | TyFun (_, _) -> "(" ^ string_of_ty l ^ ")" ^ " -> " ^ string_of_ty r
       | _ -> string_of_ty l ^ " -> " ^ string_of_ty r)
+  | _ -> err "Not supported!"
 
 let pp_ty ty =
   (* 引数をstring_of_tyに通してstring型にしてから出力します。 *)

@@ -92,20 +92,20 @@ MatchExpr :
     MATCH e1=Expr WITH NIL RARROW e2=Expr BAR x1=ID APPEND x2=ID RARROW e3=Expr { MatchExp (e1, e2, x1, x2, e3) }
 
 ConsExpr :
-    i=ListStartExpr APPEND e=ConsExpr { ConsExp (i, e) }
-  | e=ListStartExpr { e }
+    i=AppExpr APPEND e=ConsExpr { ConsExp (i, e) }
+  | e=AppExpr { e }
+
+AppExpr :
+    e1=AppExpr e2=ListStartExpr { AppExp (e1, e2) }
+  | e=ListStartExpr { e } 
 
 ListStartExpr :
     LBOX e=ListExpr { e }
-  | e=AppExpr { e }
+  | e=AExpr { e }
 
 ListExpr :
     e1=ListStartExpr SEMI e2=ListExpr { ConsExp (e1, e2) }
   | e=ListStartExpr RBOX { ConsExp (e, NilExp) }
-
-AppExpr :
-    e1=AppExpr e2=AExpr { AppExp (e1, e2) }
-  | e=AExpr { e } 
 
 AExpr :
     i=INTV { ILit i }

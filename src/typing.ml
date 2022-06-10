@@ -11,7 +11,7 @@ type tyenv = ty Environment.t
 (* 型代入を表す型 *)
 type subst = (tyvar * ty) list
 
-(* 型代入を解決させる関数？ *)
+(* 型代入を適用する関数 *)
 let rec subst_type subst ty =
   match subst with
   (* subst型の値lの最初の型代入を抜き出してassign_typeを行います。 *)
@@ -30,6 +30,7 @@ let rec subst_type subst ty =
   (* 最後までassign_typeを適用し終えると、適用後のtyを返します。 *)
   | [] -> ty
 
+(* 型の等式集合に型代入を適用する関数 *)
 let rec subst_eqs s eqs =
   match s with
   (* 型代入を一つ取り出します。 *)
@@ -43,12 +44,14 @@ let rec subst_eqs s eqs =
           else (x, y) :: subst_eqs s rest
       | [] -> [])
 
+(* 型代入を型の等式集合に変換する関数 *)
 let rec eqs_of_subst s =
   match s with
   (* tyvar型の値にTyVarを付けることによってty型と認識させ、tyvar * tyのリストをty * tyのリストに変換しています。 *)
   | (tv, t) :: rest -> ( match tv with a -> (TyVar a, t) :: eqs_of_subst rest)
   | [] -> []
 
+(* 型代入をリストに対して行う関数 *)
 let rec subst_type_list l s =
   match s with
   (* subst_typeの第二引数もリストになったバージョンです。第二引数から一つずつ組を取り出してsubst_typeを行います。 *)
@@ -56,6 +59,7 @@ let rec subst_type_list l s =
       (subst_type [ l ] x, subst_type [ l ] y) :: subst_type_list l rest
   | [] -> []
 
+(* 型の単一化を行う関数 *)
 let rec unify v =
   match v with
   (* 引数のリストの最初の組を取り出します。 *)
@@ -77,6 +81,7 @@ let rec unify v =
         | _ -> err "Cannot Unification!")
   | [] -> []
 
+(* 二項演算子から引数の型と返り値の型が何になるべきかを求める関数 *)
 let ty_prim op ty1 ty2 =
   match op with
   | Plus ->
@@ -88,6 +93,7 @@ let ty_prim op ty1 ty2 =
   | Lt -> ([ (ty1, TyInt); (ty2, TyInt) ], TyBool)
   | _ -> err "Not Implemented!"
 
+(* 型環境 tyenv と式 exp を受け取って，型代入と exp の型のペアを返す *)
 let rec ty_exp tyenv = function
   | Var x -> (
       try ([], Environment.lookup x tyenv)
@@ -129,7 +135,7 @@ let rec ty_exp tyenv = function
       let s1, ty1 =
         ty_exp
           (Environment.extend x domty1
-             (Environment.extend f (TyFun (domty1, domty2)) tyenv))
+            (Environment.extend f (TyFun (domty1, domty2)) tyenv))
           exp1
       in
       (* fをτ1->τ2に束縛した上で(s2, ty2)を評価しています。 *)
@@ -171,7 +177,7 @@ let rec ty_exp tyenv = function
       let s3, ty3 =
         ty_exp
           (Environment.extend id1 domty
-             (Environment.extend id2 (TyList domty) tyenv))
+            (Environment.extend id2 (TyList domty) tyenv))
           exp3
       in
       let eqs =
@@ -182,6 +188,7 @@ let rec ty_exp tyenv = function
       (s4, subst_type s4 ty2)
   | _ -> err "Not Implemented!"
 
+(* ty_exp の結果から型だけを取り出す関数 *)
 let ty_decl tyenv decl =
   (* 評価の返り値は型代入と型の組なので型だけを取り出します。 *)
   let ty_decl_first tyenv decl =

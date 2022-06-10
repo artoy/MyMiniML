@@ -1,8 +1,10 @@
 open Syntax
 
+(* 式を評価した値を表す型 *)
 type exval =
   | IntV of int
   | BoolV of bool
+  (* 関数閉包を表す型 *)
   | ProcV of id * exp * dnval Environment.t ref
   | DProcV of id * exp
   (* エラーが起きた際もインタプリタへの入力を受け付けるために評価時の型にエラー用の値ExceptVも含めています。 ExceptVの引数にはエラー文をとります*)
@@ -12,11 +14,14 @@ type exval =
 
 and dnval = exval
 
+(* エラー文からなるエラーを宣言 *)
 exception Error of string
 
+(* エラーを発生させる関数 *)
 let err s = raise (Error s)
 
 (* pretty printing *)
+(* 式を評価した値を string に変換する関数 *)
 let rec string_of_exval = function
   | IntV i -> string_of_int i
   | BoolV b -> string_of_bool b
@@ -27,8 +32,10 @@ let rec string_of_exval = function
   | NilV -> "[]"
   | ConsV (i, e) -> string_of_exval i ^ " :: " ^ string_of_exval e
 
+(* 式を評価した値を出力する関数 *)
 let pp_val v = print_string (string_of_exval v)
 
+(* 二項演算を評価する関数 *)
 let rec apply_prim op arg1 arg2 =
   match (op, arg1, arg2) with
   | Plus, IntV i1, IntV i2 -> IntV (i1 + i2)
@@ -44,8 +51,10 @@ let rec apply_prim op arg1 arg2 =
   | Barbar, BoolV i1, BoolV i2 -> BoolV (i1 || i2)
   | Barbar, _, _ -> err "Both arguments must be boolean: ||"
 
+(* 式を評価する関数、現在の環境と式を引数にとる *)
 let rec eval_exp env = function
   | Var x -> (
+      (* 式を評価した結果が変数の場合、環境からその変数の値を取ってくる *)
       try Environment.lookup x env
       with Environment.Not_bound -> err ("Variable not bound: " ^ x))
   | ILit i -> IntV i
@@ -79,6 +88,7 @@ let rec eval_exp env = function
       | BoolV false -> eval_exp env exp3
       | _ -> err "Test expression must be boolean: if")
   | LetExp (id, exp1, exp2) ->
+      (* let 式の場合、id を e1 に束縛してから e2　を評価する *)
       let value = eval_exp env exp1 in
       eval_exp (Environment.extend id value env) exp2
   (* let recを実装するにあたって環境が参照となったのでenvにrefを付けています。 *)
@@ -91,6 +101,7 @@ let rec eval_exp env = function
       match funval with
       | ProcV (id, body, env') ->
           (* let recを実装するにあたって環境が参照となったのでenv'に!を付けています。 *)
+          (* 静的束縛の場合、fun 式の宣言時点での環境を使って評価を行う *)
           let newenv = Environment.extend id arg !env' in
           eval_exp newenv body
           (* 環境は関数呼び出し時点での環境にidをargに束縛した環境を加えています。 *)
@@ -122,6 +133,7 @@ let rec eval_exp env = function
             eval_exp newenv exp3
         | _ -> err "Value after match must be Nil or Cons")
 
+(* 式・宣言を評価した際の、束縛された変数・新しい環境・束縛された変数の値を求める関数 *)
 let eval_decl env = function
   | Exp e ->
       let v = eval_exp env e in

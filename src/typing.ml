@@ -2,12 +2,16 @@ open Syntax
 
 exception Error of string
 
+(* 例外を発生させるための関数 *)
 let err s = raise (Error s)
 
+(* トークンと型のタプルのリスト。変数がどの型に束縛されているかが入っている *)
 type tyenv = ty Environment.t
 
+(* 型代入を表す型 *)
 type subst = (tyvar * ty) list
 
+(* 型代入を解決させる関数？ *)
 let rec subst_type subst ty =
   match subst with
   (* subst型の値lの最初の型代入を抜き出してassign_typeを行います。 *)

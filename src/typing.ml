@@ -135,7 +135,7 @@ let rec ty_exp tyenv = function
       let s1, ty1 =
         ty_exp
           (Environment.extend x domty1
-            (Environment.extend f (TyFun (domty1, domty2)) tyenv))
+             (Environment.extend f (TyFun (domty1, domty2)) tyenv))
           exp1
       in
       (* fをτ1->τ2に束縛した上で(s2, ty2)を評価しています。 *)
@@ -177,7 +177,7 @@ let rec ty_exp tyenv = function
       let s3, ty3 =
         ty_exp
           (Environment.extend id1 domty
-            (Environment.extend id2 (TyList domty) tyenv))
+             (Environment.extend id2 (TyList domty) tyenv))
           exp3
       in
       let eqs =
